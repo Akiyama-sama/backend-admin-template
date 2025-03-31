@@ -1,0 +1,107 @@
+import { Employee } from "./schema";
+export const employeeData:Employee[] = [
+    {
+        id: 1,
+        employeeNo: 'E2005001',
+        name: '喻自强',
+        gender: 'M',
+        birthDate: '1965-04-15',
+        address: '南京市',
+        telephone: '13817605008',
+        hireDate: new Date('1990-02-06'),
+        department: '财务科',
+        headship: '科长',
+        salary: 5800.80
+    },
+    {
+        id: 2,
+        employeeNo: 'E2005002',
+        name: '张小梅',
+        gender: 'F',
+        birthDate: '1973-11-01',
+        address: '上海市',
+        telephone: '13817605008',
+        hireDate: new Date('1991-03-28'),
+        department: '业务科',
+        headship: '职员',
+        salary: 2400.00
+    },
+    {
+        id: 3,
+        employeeNo: 'E2005003',
+        name: '张小娟',
+        gender: 'F',
+        birthDate: '1973-03-06',
+        address: '上海市',
+        telephone: '13817605008',
+        hireDate: new Date('1992-03-28'),
+        department: '业务科',
+        headship: '职员',
+        salary: 2600.00
+    },
+    {
+        id: 4,
+        employeeNo: 'E2005004',
+        name: '张 露',
+        gender: 'F',
+        birthDate: '1967-01-05',
+        address: '南昌市',
+        telephone: '13817605008',
+        hireDate: new Date('1990-03-28'),
+        department: '办公室',
+        headship: '主任',
+        salary: 4000.00
+    },
+    {
+        id: 5,
+        employeeNo: 'E2006003',
+        name: '刘 风',
+        gender: 'F',
+        birthDate: '1973-05-21',
+        address: '南昌市',
+        telephone: '13817605008',
+        hireDate: new Date('1991-02-28'),
+        department: '业务科',
+        headship: '职员',
+        salary: 2500.00
+    },
+    {
+        id: 6,
+        employeeNo: 'E2007002',
+        name: '高代鹏',
+        gender: 'M',
+        birthDate: '1973-01-02',
+        address: '南京市',
+        telephone: '13817605008',
+        hireDate: new Date('1991-11-28'),
+        department: '办公室',
+        headship: '文员',
+        salary: 2700.00
+    },
+    {
+        id: 7,
+        employeeNo: 'E2008003',
+        name: '黄梅莹',
+        gender: 'F',
+        birthDate: '1972-05-15',
+        address: '上海市',
+        telephone: '13817605008',
+        hireDate: new Date('1990-05-28'),
+        department: '业务科',
+        headship: '职员',
+        salary: 3400.00
+    },
+    {
+        id: 8,
+        employeeNo: 'E2008005',
+        name: '张小梅',
+        gender: 'F',
+        birthDate: '1970-11-06',
+        address: '深圳市',
+        telephone: '13817605008',
+        hireDate: new Date('1990-11-18'),
+        department: '财务科',
+        headship: '会计',
+        salary: 5000.00
+    }
+]
