@@ -32,6 +32,7 @@ pnpm install
 # 启动开发服务器
 npm run dev
 # 访问 http://localhost:5173 查看应用
+# 首次加载比较慢，请耐心等待
 
 # 构建生产版本
 npm run build

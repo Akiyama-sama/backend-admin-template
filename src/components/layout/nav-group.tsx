@@ -24,7 +24,7 @@ export function NavGroup({title,items}:NavGroupProps) {
         <SidebarGroupLabel>{title}</SidebarGroupLabel>
         <SidebarMenu>
         {items.map((item) => {
-          const key = `${item.title}-${item.url}`
+          const key = `${item.title}-${item.url || ''}`
           if (!item.items)
             return <SidebarMenuLink key={key} item={item}/>
 
@@ -45,10 +45,17 @@ function SidebarMenuLink({item}:{item:NavItem}){
         asChild
         tooltip={item.title}
       >
-        <Link to={item.url} onClick={() => setOpenMobile(false)}>
-          {item.icon && <item.icon />}
-          <span>{item.title}</span>
-        </Link>
+        {item.url ? (
+          <Link to={item.url} onClick={() => setOpenMobile(false)}>
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+          </Link>
+        ) : (
+          <div className="flex items-center">
+            {item.icon && <item.icon />}
+            <span>{item.title}</span>
+          </div>
+        )}
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
@@ -62,12 +69,20 @@ function SidebarMenuCollapsible({item}:{item:NavItem}){
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton asChild>
-                <Link to={item.url}>
+            {item.url ? (
+              <Link to={item.url}>
                 {item.icon && <item.icon />}
                 {item.title}
                 <ChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
-                </Link>
-              </SidebarMenuButton>
+              </Link>
+            ) : (
+              <div className="flex items-center w-full">
+                {item.icon && <item.icon />}
+                {item.title}
+                <ChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+              </div>
+            )}
+          </SidebarMenuButton>
         </CollapsibleTrigger>
           
         <CollapsibleContent className='CollapsibleContent'>
@@ -75,10 +90,17 @@ function SidebarMenuCollapsible({item}:{item:NavItem}){
             {item.items?.map((subItem) => (
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton asChild>
-                  <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
-                    {subItem.icon && <subItem.icon />}
-                    <span>{subItem.title}</span>
-                  </Link>
+                  {subItem.url ? (
+                    <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
+                      {subItem.icon && <subItem.icon />}
+                      <span>{subItem.title}</span>
+                    </Link>
+                  ) : (
+                    <div className="flex items-center">
+                      {subItem.icon && <subItem.icon />}
+                      <span>{subItem.title}</span>
+                    </div>
+                  )}
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>
             ))}

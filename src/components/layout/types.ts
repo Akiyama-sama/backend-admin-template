@@ -1,3 +1,5 @@
+import React from 'react'
+
 interface User {
   name: string
   email: string
@@ -7,7 +9,7 @@ interface User {
 
  type NavItem = {
   title: string,
-  url: string,
+  url?: string,
   icon?: React.ElementType,
   items?: NavItem[]
 }
