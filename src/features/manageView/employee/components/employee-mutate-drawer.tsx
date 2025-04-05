@@ -56,7 +56,7 @@ export function EmployeeMutateDrawer({ open, onOpenChange, currentRow }: Props) 
     onOpenChange(false)
     form.reset()
     toast({
-      title: 'You submitted the following values:',
+      title: '您提交了以下值：',
       description: (
         <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
           <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
@@ -73,14 +73,14 @@ export function EmployeeMutateDrawer({ open, onOpenChange, currentRow }: Props) 
         form.reset()
       }}
     >
-      <SheetContent className='flex flex-col'>
+      <SheetContent className='flex flex-col overflow-visible'>
         <SheetHeader className='text-left'>
-          <SheetTitle>{isUpdate ? 'Update' : 'Create'} Employee</SheetTitle>
+          <SheetTitle>{isUpdate ? '更新' : '创建'} 员工</SheetTitle>
           <SheetDescription>
             {isUpdate
-              ? 'Update the employee by providing necessary info.'
-              : 'Add a new employee by providing necessary info.'}
-            Click save when you&apos;re done.
+              ? '更新员工所需信息。'
+              : '添加新员工所需信息。'}
+            完成后点击保存。
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -96,7 +96,7 @@ export function EmployeeMutateDrawer({ open, onOpenChange, currentRow }: Props) 
                 <FormItem className='space-y-1'>
                   <FormLabel>员工编号</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a employeeNo' />
+                    <Input {...field} placeholder='请输入员工编号' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -109,7 +109,7 @@ export function EmployeeMutateDrawer({ open, onOpenChange, currentRow }: Props) 
                 <FormItem className='space-y-1'>
                   <FormLabel>员工姓名</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a name' />
+                    <Input {...field} placeholder='请输入员工姓名' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +122,7 @@ export function EmployeeMutateDrawer({ open, onOpenChange, currentRow }: Props) 
                 <FormItem className='space-y-1'>
                   <FormLabel>员工性别</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a gender' />
+                    <Input {...field} placeholder='请输入员工性别' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -130,17 +130,71 @@ export function EmployeeMutateDrawer({ open, onOpenChange, currentRow }: Props) 
             />
             <FormField
               control={form.control}
-              name='gender'
+              name='address'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>出生日期</FormLabel>
+                  <FormLabel>员工地址</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a birthDate' />
+                    <Input {...field} placeholder='请输入员工地址' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+              
+            />
+            <FormField
+              control={form.control}
+              name='telephone'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>员工电话</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='请输入员工电话' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name='department'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>员工部门</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='请输入员工所在部门' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='headship'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>员工职位</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='请输入员工职位' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='salary'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>员工工资</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='请输入员工工资' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
           </form>
         </Form>
         <SheetFooter className='gap-2'>

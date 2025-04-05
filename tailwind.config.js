@@ -63,7 +63,20 @@ module.exports = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
-  		}
+  		},
+  		animation: {
+  			"pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+  		},
+  		keyframes: {
+  			"accordion-down": {
+  				from: { height: 0 },
+  				to: { height: "var(--radix-accordion-content-height)" },
+  			},
+  			"accordion-up": {
+  				from: { height: "var(--radix-accordion-content-height)" },
+  				to: { height: 0 },
+  			},
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

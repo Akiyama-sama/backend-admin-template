@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
-import { Employee } from '../components/columns'
+import { Employee } from '../data/schema'
 
 type EmployeeDialogType = 'create' | 'update' | 'delete'|'import'
 
@@ -17,9 +17,11 @@ interface Props {
   children: React.ReactNode
 }
 
+
 export default function EmployeeProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<EmployeeDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Employee | null>(null)
+  
   return (
     <EmployeeContext.Provider value={{ open, setOpen, currentRow, setCurrentRow }}>
       {children}

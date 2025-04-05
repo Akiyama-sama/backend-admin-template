@@ -1,4 +1,4 @@
-import { DataTable } from "./components/employee-data-table";
+import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import { employeeData } from "./data/employee-data";
 import { EmployeeHeader } from "./components/employee-header";

@@ -7,21 +7,21 @@ const feedbacks = [
     user: "Alice Johnson",
     avatar: "/placeholder.svg?height=40&width=40",
     rating: 5,
-    comment: "Love the new dashboard feature! It's so intuitive and helpful.",
+    comment: "爱新的仪表板功能！它如此直观且有用。",
   },
   {
     id: 2,
     user: "Bob Smith",
     avatar: "/placeholder.svg?height=40&width=40",
     rating: 4,
-    comment: "Great app overall, but could use some improvements in loading speed.",
+    comment: "总体来说，这个应用程序很好，但可以改进加载速度。",
   },
   {
     id: 3,
     user: "Carol Williams",
     avatar: "/placeholder.svg?height=40&width=40",
     rating: 5,
-    comment: "The customer support is top-notch. They resolved my issue quickly.",
+    comment: "客户支持非常出色。他们迅速解决了我的问题。",
   },
 ]
 
@@ -30,18 +30,18 @@ export function UserFeedback() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>User Satisfaction</CardTitle>
-          <CardDescription>Overall rating: 4.5/5</CardDescription>
+          <CardTitle>用户满意度</CardTitle>
+          <CardDescription>总体评分: 4.5/5</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold">90%</div>
-          <p className="text-sm text-muted-foreground">Users who would recommend our app</p>
+          <p className="text-sm text-muted-foreground">会推荐我们的应用程序</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Recent Feedback</CardTitle>
-          <CardDescription>Latest user comments</CardDescription>
+          <CardTitle>最近反馈</CardTitle>
+          <CardDescription>最新用户评论</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

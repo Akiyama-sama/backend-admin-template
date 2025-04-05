@@ -2,11 +2,7 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuItem,
-    SidebarMenuButton,
   } from "@/components/ui/sidebar"
   import { sidebarData } from "./data/siderbar-data"
   import { NavGroup } from "./nav-group"
@@ -15,8 +11,8 @@ import {
   export function AppSidebar() {
     return (
       <Sidebar variant="floating" collapsible="icon">
-        <SidebarHeader>
-            <div className="border-b border-border py-2 text-lg font-bold text-center">
+        <SidebarHeader className="group-data-[state=collapsed]:hidden">
+            <div className="border-b border-border py-2 text-lg font-bold text-center hidden sm:block">
                 后台管理系统
             </div>
         </SidebarHeader>

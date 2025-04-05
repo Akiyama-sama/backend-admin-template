@@ -66,12 +66,14 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
     },
+    enableRowSelection: true,
   })
 
   return (

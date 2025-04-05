@@ -7,7 +7,7 @@ import { UserFeedback } from "@/features/dashboard/components/user-feedback"
 export default function Dashboard() {
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Analytics Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">数据分析仪表盘</h1>
       <Tabs defaultValue="user-stats" className="space-y-4">
         <TabsList>
           <TabsTrigger value="user-stats">用户统计</TabsTrigger>

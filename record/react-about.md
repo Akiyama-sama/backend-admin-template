@@ -396,7 +396,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -404,7 +404,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </Router>
   );
 }
 ```
@@ -620,658 +620,6 @@ useEffect(() => {
   <Route path="*" element={<NotFound />} />
 </Routes>
 ```
-
-## React Router 路由模式与后台管理系统最佳实践
-
-React Router 主要有三种路由模式，每种模式适用于不同的场景。对于后台管理系统，选择合适的路由模式至关重要。
-
-### 三种主要路由模式
-
-#### 1. 声明式路由（Declarative Routing）
-
-使用 JSX 直接在组件树中声明路由结构。这是最简单直观的方式。
-
-```tsx
-<Routes>
-  <Route path="/" element={<Layout />}>
-    <Route index element={<Dashboard />} />
-    <Route path="users" element={<Users />} />
-    <Route path="settings" element={<Settings />} />
-  </Route>
-</Routes>
-```
-
-**优点**：
-- 直观易懂，结构清晰
-- 与React组件思维一致
-- 适合小到中型应用
-
-**缺点**：
-- 难以在大型应用中管理
-- 代码重用性较低
-- 路由逻辑与UI混合
-
-#### 2. 数据路由（Data Router）
-
-利用 loader 和 action 进行数据加载和处理的路由方式。
-
-```tsx
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Layout />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        index: true,
-        element: <Dashboard />,
-        loader: dashboardLoader,
-      },
-      {
-        path: "users",
-        element: <Users />,
-        loader: loadUsers,
-        action: saveUser,
-      }
-    ],
-  },
-]);
-```
-
-**优点**：
-- 路由与数据加载紧密集成
-- 处理加载状态和错误更简单
-- 提高用户体验（预加载数据）
-
-**缺点**：
-- 学习曲线较陡
-- 概念较多（loader, action, fetcher等）
-- 需要适应新的数据获取范式
-
-#### 3. 对象/配置路由（Object/Config Router）
-
-使用JavaScript对象定义路由结构，完全分离路由配置与UI组件。
-
-```tsx
-// routes/index.ts
-export const routes = [
-  {
-    path: "/",
-    element: <Layout />,
-    children: [
-      { index: true, element: <Dashboard /> },
-      { path: "users", element: <Users /> },
-      { path: "products", element: <Products /> }
-    ]
-  }
-];
-
-// App.tsx
-const router = createBrowserRouter(routes);
-
-function App() {
-  return <RouterProvider router={router} />;
-}
-```
-
-**优点**：
-- 路由定义与组件分离
-- 易于维护和扩展
-- 适合大型应用和复杂路由结构
-- 可以进行代码分割
-
-**缺点**：
-- 需要额外的配置文件
-- 异步路由加载需要额外处理
-- 相比直接JSX略微抽象
-
-### 后台管理系统的路由管理最佳实践
-
-根据大多数后台管理系统的特点（模块化、权限控制、多级菜单），推荐使用**对象/配置路由模式**，下面是具体实践：
-
-#### 1. 按模块组织路由配置
-
-```tsx
-// src/routes/index.ts - 主路由文件
-import { lazy } from 'react';
-import { adminRoutes } from './admin.routes';
-import { userRoutes } from './user.routes';
-import { productRoutes } from './product.routes';
-import { orderRoutes } from './order.routes';
-
-// 懒加载主要布局组件
-const MainLayout = lazy(() => import('../components/layout/MainLayout'));
-const Login = lazy(() => import('../pages/Login'));
-const NotFound = lazy(() => import('../pages/NotFound'));
-
-export const routes = [
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: <Dashboard /> },
-      // 合并其他模块路由
-      ...adminRoutes,
-      ...userRoutes,
-      ...productRoutes,
-      ...orderRoutes,
-      { path: '*', element: <NotFound /> }
-    ]
-  },
-  {
-    path: '/login',
-    element: <Login />
-  }
-];
-```
-
-#### 2. 模块路由文件示例
-
-```tsx
-// src/routes/user.routes.ts
-import { lazy } from 'react';
-import { AdminGuard } from '../guards/AdminGuard';
-
-const UserList = lazy(() => import('../pages/users/UserList'));
-const UserDetail = lazy(() => import('../pages/users/UserDetail'));
-const UserCreate = lazy(() => import('../pages/users/UserCreate'));
-
-export const userRoutes = [
-  {
-    path: 'users',
-    element: <AdminGuard><Outlet /></AdminGuard>,
-    children: [
-      { index: true, element: <UserList /> },
-      { path: ':id', element: <UserDetail /> },
-      { path: 'new', element: <UserCreate /> }
-    ]
-  }
-];
-```
-
-#### 3. 根据权限动态生成路由
-
-```tsx
-// src/utils/routeUtils.ts
-import { Route } from '../types/route';
-
-export function filterRoutesByPermissions(routes: Route[], userPermissions: string[]): Route[] {
-  return routes.filter(route => {
-    // 检查当前路由是否需要权限
-    if (route.requiredPermission && !userPermissions.includes(route.requiredPermission)) {
-      return false;
-    }
-    
-    // 递归处理子路由
-    if (route.children) {
-      route.children = filterRoutesByPermissions(route.children, userPermissions);
-    }
-    
-    return true;
-  });
-}
-
-// 使用
-const userPermissions = ['admin', 'manage_users', 'view_reports'];
-const accessibleRoutes = filterRoutesByPermissions(routes, userPermissions);
-```
-
-#### 4. 动态菜单与路由同步
-
-```tsx
-// src/components/layout/Sidebar.tsx
-import { useLocation } from 'react-router-dom';
-import { filterRoutesByPermissions } from '../../utils/routeUtils';
-import { routes } from '../../routes';
-import { useAuth } from '../../hooks/useAuth';
-
-function Sidebar() {
-  const location = useLocation();
-  const { user } = useAuth();
-  
-  // 根据用户权限过滤路由
-  const accessibleRoutes = filterRoutesByPermissions(routes, user.permissions);
-  
-  // 转换路由配置为菜单项
-  const menuItems = convertRoutesToMenuItems(accessibleRoutes);
-  
-  return (
-    <nav className="sidebar">
-      {menuItems.map(item => (
-        <MenuItem 
-          key={item.path} 
-          item={item} 
-          isActive={location.pathname.startsWith(item.path)}
-        />
-      ))}
-    </nav>
-  );
-}
-```
-
-#### 5. 路由懒加载与Suspense结合
-
-```tsx
-// src/App.tsx
-import { Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { routes } from './routes';
-import Loading from './components/ui/Loading';
-
-const router = createBrowserRouter(routes);
-
-function App() {
-  return (
-    <Suspense fallback={<Loading />}>
-      <RouterProvider router={router} />
-    </Suspense>
-  );
-}
-```
-
-#### 6. 路由守卫实现
-
-```tsx
-// src/guards/AuthGuard.tsx
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-
-export function AuthGuard() {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
-  
-  if (!isAuthenticated) {
-    // 保存尝试访问的URL，登录后可以重定向回来
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-  }
-  
-  return <Outlet />;
-}
-```
-
-### 后台管理系统路由选择建议
-
-对于您的后台管理模板项目，基于以下因素：
-
-1. **项目复杂度**：作为后台管理系统，通常会有多个功能模块和嵌套路由
-2. **权限管理**：可能需要基于用户角色显示不同的路由
-3. **代码组织**：需要良好的模块化和可维护性
-4. **懒加载需求**：提高性能，按需加载不同的管理页面
-
-强烈推荐采用**对象/配置路由模式**，因为它提供：
-
-- 更好的代码组织和模块化
-- 更容易实现基于权限的动态路由
-- 与后台管理系统的菜单结构自然契合
-- 更好的懒加载支持
-- 更好的可维护性和可扩展性
-
-如果项目较小或者不需要复杂的权限管理，也可以考虑声明式路由，它的直观性更高。
-
-无论选择哪种模式，都建议遵循上面的最佳实践，特别是：
-- 按模块组织路由
-- 实现合适的路由守卫
-- 利用懒加载提高性能
-- 将菜单和路由配置同步管理
-
----
-
-## React 懒加载 (Code Splitting & Lazy Loading)
-
-懒加载是一种优化前端应用性能的技术，通过延迟加载非关键或暂时不需要的资源（组件、路由、图片等），减少首次加载时间，提高用户体验。
-
-### 基本概念
-
-#### 懒加载的本质
-
-懒加载（Lazy Loading）也被称为按需加载，它的核心思想是：**只在需要时才加载资源**。这与传统的一次性加载所有资源的方式形成对比。
-
-在React应用中，懒加载通常与代码分割（Code Splitting）结合使用，将应用分解成多个小包（chunks），按需加载这些包。
-
-#### 工作原理
-
-懒加载的实现依赖于以下技术：
-
-1. **动态import()**: ES6的动态导入语法，返回一个Promise
-2. **Webpack代码分割**: 将代码分割成多个独立的包
-3. **React.lazy()**: React 16.6引入的API，用于组件的延迟加载
-4. **Suspense组件**: 处理加载状态
-
-### 在React中实现懒加载
-
-#### 1. 组件懒加载
-
-```tsx
-import React, { lazy, Suspense } from 'react';
-
-// 懒加载组件
-const LazyComponent = lazy(() => import('./LazyComponent'));
-
-function App() {
-  return (
-    <div>
-      <h1>App组件 (立即加载)</h1>
-      
-      <Suspense fallback={<div>加载中...</div>}>
-        {/* LazyComponent只在渲染时才会加载 */}
-        <LazyComponent />
-      </Suspense>
-    </div>
-  );
-}
-```
-
-#### 2. 路由懒加载
-
-```tsx
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-// 懒加载路由组件
-const Home = lazy(() => import('./pages/Home'));
-const About = lazy(() => import('./pages/About'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-
-function App() {
-  return (
-    <Router>
-      <Suspense fallback={<div>页面加载中...</div>}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Suspense>
-    </Router>
-  );
-}
-```
-
-#### 3. 条件懒加载
-
-```tsx
-import React, { lazy, Suspense, useState } from 'react';
-
-// 懒加载重量级组件
-const HeavyChart = lazy(() => import('./components/HeavyChart'));
-
-function Dashboard() {
-  const [showChart, setShowChart] = useState(false);
-  
-  return (
-    <div>
-      <h2>仪表盘</h2>
-      <button onClick={() => setShowChart(!showChart)}>
-        {showChart ? '隐藏图表' : '显示图表'}
-      </button>
-      
-      {showChart && (
-        <Suspense fallback={<div>图表加载中...</div>}>
-          <HeavyChart />
-        </Suspense>
-      )}
-    </div>
-  );
-}
-```
-
-### 懒加载的优势
-
-1. **减少初始加载时间**：只加载首屏必要的代码，加快首次内容绘制（FCP）
-2. **减少资源浪费**：用户可能不会访问所有页面，懒加载避免加载未使用的代码
-3. **提高用户体验**：更快的初始加载时间意味着用户更快看到内容
-4. **降低带宽消耗**：特别重要的是移动设备和网络连接不稳定的情况
-
-### 实际工程应用案例
-
-#### 1. 复杂后台管理系统的模块懒加载
-
-```tsx
-// src/routes/index.tsx
-import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
-import MainLayout from '../layouts/MainLayout';
-import LoadingScreen from '../components/LoadingScreen';
-
-// 懒加载各个模块
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const UserManagement = lazy(() => import('../pages/UserManagement'));
-const ProductManagement = lazy(() => import('../pages/ProductManagement'));
-const OrderManagement = lazy(() => import('../pages/OrderManagement'));
-const ReportGenerator = lazy(() => import('../pages/ReportGenerator'));
-const Settings = lazy(() => import('../pages/Settings'));
-
-// 为每个懒加载组件创建带Suspense的包装器
-const withSuspense = (Component) => (
-  <Suspense fallback={<LoadingScreen />}>
-    <Component />
-  </Suspense>
-);
-
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-      { index: true, element: withSuspense(Dashboard) },
-      { path: 'users/*', element: withSuspense(UserManagement) },
-      { path: 'products/*', element: withSuspense(ProductManagement) },
-      { path: 'orders/*', element: withSuspense(OrderManagement) },
-      { path: 'reports', element: withSuspense(ReportGenerator) },
-      { path: 'settings', element: withSuspense(Settings) },
-    ],
-  },
-]);
-```
-
-#### 2. 按业务模块进行代码分割
-
-```tsx
-// 用户模块路由
-const UserRoutes = lazy(() => import('./routes/UserRoutes'));
-const ProductRoutes = lazy(() => import('./routes/ProductRoutes'));
-const OrderRoutes = lazy(() => import('./routes/OrderRoutes'));
-
-function AppRoutes() {
-  return (
-    <Suspense fallback={<GlobalLoader />}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/users/*" element={<UserRoutes />} />
-        <Route path="/products/*" element={<ProductRoutes />} />
-        <Route path="/orders/*" element={<OrderRoutes />} />
-      </Routes>
-    </Suspense>
-  );
-}
-```
-
-#### 3. 大型表格或图表的懒加载
-
-```tsx
-import React, { lazy, Suspense, useState } from 'react';
-
-// 懒加载大型表格组件
-const DataGrid = lazy(() => 
-  import('./components/DataGrid').then(module => {
-    // 模拟加载延迟，实际项目中可以删除
-    return new Promise(resolve => {
-      setTimeout(() => resolve(module), 1000);
-    });
-  })
-);
-
-function ReportPage() {
-  const [showReport, setShowReport] = useState(false);
-  
-  return (
-    <div className="report-container">
-      <h1>销售报告</h1>
-      
-      <button 
-        onClick={() => setShowReport(true)}
-        disabled={showReport}
-      >
-        生成报告
-      </button>
-      
-      {showReport && (
-        <Suspense fallback={<div className="report-skeleton">报告生成中...</div>}>
-          <DataGrid 
-            rows={5000} 
-            columns={20} 
-            data={salesData} 
-          />
-        </Suspense>
-      )}
-    </div>
-  );
-}
-```
-
-#### 4. 第三方库的懒加载
-
-```tsx
-import React, { lazy, Suspense, useState } from 'react';
-
-// 懒加载包含大型依赖的组件
-const RichTextEditor = lazy(() => import('./components/RichTextEditor'));
-const MapComponent = lazy(() => import('./components/MapComponent'));
-const VideoPlayer = lazy(() => import('./components/VideoPlayer'));
-
-function ContentCreationTool() {
-  const [activeTab, setActiveTab] = useState('text');
-  
-  return (
-    <div>
-      <div className="tabs">
-        <button onClick={() => setActiveTab('text')}>文本编辑器</button>
-        <button onClick={() => setActiveTab('map')}>地图</button>
-        <button onClick={() => setActiveTab('video')}>视频</button>
-      </div>
-      
-      <Suspense fallback={<div className="tool-loader">工具加载中...</div>}>
-        {activeTab === 'text' && <RichTextEditor />}
-        {activeTab === 'map' && <MapComponent />}
-        {activeTab === 'video' && <VideoPlayer />}
-      </Suspense>
-    </div>
-  );
-}
-```
-
-### 注意事项与最佳实践
-
-#### 1. 合理的分割粒度
-
-- **过大的分割**：会导致网络请求过多
-- **过小的分割**：无法有效减少初始加载体积
-- **最佳实践**：按照功能模块或路由页面进行分割
-
-```tsx
-// 好的分割方式 - 按功能模块
-const UserModule = lazy(() => import('./modules/UserModule'));
-const ProductModule = lazy(() => import('./modules/ProductModule'));
-
-// 不推荐的分割方式 - 粒度过细
-const Button = lazy(() => import('./components/Button'));
-const Input = lazy(() => import('./components/Input'));
-```
-
-#### 2. 预加载策略
-
-除了懒加载，还可以实现预加载，在用户可能需要某个组件之前就开始加载：
-
-```tsx
-const ProductDetail = lazy(() => import('./pages/ProductDetail'));
-
-function ProductList({ products }) {
-  // 当用户悬停在产品上时预加载详情页
-  const handleMouseEnter = (productId) => {
-    // 预先导入模块
-    import('./pages/ProductDetail');
-  };
-  
-  return (
-    <div>
-      {products.map(product => (
-        <div 
-          key={product.id}
-          onMouseEnter={() => handleMouseEnter(product.id)}
-        >
-          {product.name}
-        </div>
-      ))}
-    </div>
-  );
-}
-```
-
-#### 3. 加载状态处理
-
-使用骨架屏(Skeleton)替代简单的加载指示器：
-
-```tsx
-import React, { lazy, Suspense } from 'react';
-import ProductDetailSkeleton from './skeletons/ProductDetailSkeleton';
-
-const ProductDetail = lazy(() => import('./pages/ProductDetail'));
-
-function Product({ id }) {
-  return (
-    <Suspense fallback={<ProductDetailSkeleton />}>
-      <ProductDetail id={id} />
-    </Suspense>
-  );
-}
-```
-
-#### 4. 错误边界处理
-
-结合错误边界(Error Boundary)处理加载失败情况：
-
-```tsx
-import React, { lazy, Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-
-const HeavyComponent = lazy(() => import('./HeavyComponent'));
-
-function MyComponent() {
-  return (
-    <ErrorBoundary
-      fallback={<div>加载组件时出错，请刷新页面重试</div>}
-    >
-      <Suspense fallback={<div>加载中...</div>}>
-        <HeavyComponent />
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
-```
-
-### 实际效果分析
-
-以一个中等规模的后台管理系统为例，应用懒加载前后的性能对比：
-
-| 指标 | 应用懒加载前 | 应用懒加载后 | 改善 |
-|------|------------|------------|-----|
-| 初始包体积 | 2.3MB | 0.7MB | 减少70% |
-| 首屏加载时间 | 3.2秒 | 1.1秒 | 减少66% |
-| 首次内容绘制 | 1.8秒 | 0.8秒 | 减少56% |
-| 内存占用峰值 | 230MB | 180MB | 减少22% |
-
-### 总结
-
-懒加载是React项目优化的重要手段，特别适合：
-
-1. **大型单页应用**：功能模块众多，但用户每次会话可能只使用其中一部分
-2. **后台管理系统**：包含多个相对独立的功能模块
-3. **包含重量级组件**：如大型表格、图表、编辑器等
-4. **使用大型第三方库**：如地图、视频播放器、复杂编辑器等
-
-通过合理的懒加载策略，可以显著提升应用的初始加载性能和用户体验，尤其是在网络条件不佳或设备性能有限的情况下更为明显。
-
----
 
 ## React Router 7 框架模式 (Framework Mode) 实践
 
@@ -1647,6 +995,929 @@ function Navigation() {
 
 ---
 
+## React Router在后台管理系统中的框架模式实践与改进建议
+
+在中型后台管理系统中，路由管理对项目结构和开发效率有着重要影响。React Router v6+提供的框架模式(Framework Mode)是一种现代化的路由管理方式，特别适合后台管理系统。
+
+### 当前项目路由实现分析
+
+从当前项目代码分析，主要采用了`createBrowserRouter`创建路由配置，已经实现了基本的嵌套路由结构：
+
+```tsx
+// src/routes/index.tsx
+import {createBrowserRouter} from 'react-router-dom';
+import Order from '../features/manageView/order/order.tsx';
+import Index from '../features/app/layout';
+import Dashboard from '../features/dashboard/dashboard';
+import Employee from '../features/manageView/employee/employee';
+import { User } from '../features/manageView/users/user';
+import Error from '../features/errors/error';
+// ...其他导入
+
+export const router = createBrowserRouter([
+    {
+        path:'/',
+        element:<Index/>,
+        children:[{
+            index:true,
+            element:<Dashboard />
+        },
+        {
+            path:'manageView/order',
+            element:<Order />
+        },
+        {
+            path:'manageView/employee',
+            element:<Employee />
+        },
+        {
+            path:'manageView/users',
+            element:<User />
+        },
+        ]
+    },
+    {
+        path:'/errors',
+        element:<Error />,
+        children:[
+            {
+                path:'forbidden',
+                element:<ForbiddenError />
+            },
+            // ...其他错误页面
+        ]
+    }
+])
+```
+
+同时，项目使用了侧边栏导航数据：
+
+```tsx
+// src/components/layout/data/siderbar-data.ts
+export const sidebarData = {
+  // ...其他配置
+  navGroups: [
+    {
+      title: 'General',
+      items: [
+        {
+          title: 'Dashboard',
+          url: '/',
+          icon: IconLayoutDashboard,
+        },
+        {
+          title: 'Orders',
+          url: '/manageView/order',
+          icon: IconChecklist,
+        },
+        // ...其他导航项
+      ],
+    },
+    // ...其他导航组
+  ],
+}
+```
+
+### 改进建议
+
+#### 1. 路由与导航数据同步管理
+
+当前项目中，路由配置(`routes/index.tsx`)与导航数据(`siderbar-data.ts`)是分开管理的，这可能导致两者不同步的问题。
+
+**改进方案**：创建统一的路由配置源，自动生成侧边栏数据。
+
+```tsx
+// src/routes/config.ts
+import { IconLayoutDashboard, IconChecklist, IconUsers } from '@tabler/icons-react';
+import { lazy } from 'react';
+
+// 懒加载组件
+const Dashboard = lazy(() => import('../features/dashboard/dashboard'));
+const Order = lazy(() => import('../features/manageView/order/order'));
+const Employee = lazy(() => import('../features/manageView/employee/employee'));
+
+// 统一的路由配置
+export const routeConfig = [
+  {
+    path: '/',
+    name: 'Dashboard',
+    icon: IconLayoutDashboard,
+    component: Dashboard,
+    index: true,
+  },
+  {
+    path: 'manageView/order',
+    name: 'Orders',
+    icon: IconChecklist,
+    component: Order,
+  },
+  {
+    path: 'manageView/employee',
+    name: 'Employees',
+    icon: IconUsers,
+    component: Employee,
+  },
+  // ...其他路由
+];
+
+// 生成Router配置和侧边栏数据
+export function generateRouterConfig() {
+  return routeConfig.map(route => ({
+    path: route.index ? undefined : route.path,
+    index: route.index || undefined,
+    element: <route.component />
+  }));
+}
+
+export function generateSidebarData() {
+  return {
+    title: 'General',
+    items: routeConfig.map(route => ({
+      title: route.name,
+      url: route.index ? '/' : `/${route.path}`,
+      icon: route.icon,
+    }))
+  };
+}
+```
+
+#### 2. 实现代码分割与懒加载
+
+当前项目中没有看到使用代码分割和懒加载的实现，这对于中型项目的性能优化很重要。
+
+**改进方案**：使用React.lazy和Suspense实现路由级别的代码分割。
+
+```tsx
+// src/routes/index.tsx
+import { lazy, Suspense } from 'react';
+import { createBrowserRouter } from 'react-router-dom';
+import Index from '../features/app/layout';
+import LoadingFallback from '../components/ui/loading-fallback';
+
+// 懒加载路由组件
+const Dashboard = lazy(() => import('../features/dashboard/dashboard'));
+const Order = lazy(() => import('../features/manageView/order/order'));
+const Employee = lazy(() => import('../features/manageView/employee/employee'));
+const User = lazy(() => import('../features/manageView/users/user'));
+const Error = lazy(() => import('../features/errors/error'));
+const ForbiddenError = lazy(() => import('../features/errors/forbidden'));
+// ...其他组件
+
+// 包装懒加载组件
+const withSuspense = (Component) => (
+  <Suspense fallback={<LoadingFallback />}>
+    <Component />
+  </Suspense>
+);
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Index />,
+    children: [
+      { index: true, element: withSuspense(Dashboard) },
+      { path: 'manageView/order', element: withSuspense(Order) },
+      { path: 'manageView/employee', element: withSuspense(Employee) },
+      { path: 'manageView/users', element: withSuspense(User) },
+    ]
+  },
+  {
+    path: '/errors',
+    element: withSuspense(Error),
+    children: [
+      { path: 'forbidden', element: withSuspense(ForbiddenError) },
+      // ...其他错误页面
+    ]
+  }
+]);
+```
+
+#### 3. 路由权限控制
+
+当前项目中没有明确的路由权限控制机制，这对后台管理系统是必要的。
+
+**改进方案**：实现基于角色的路由访问控制。
+
+```tsx
+// src/guards/auth-guard.tsx
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/use-auth';
+
+export function AuthGuard({ children, requiredRoles = [] }) {
+  const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
+  
+  if (!isAuthenticated) {
+    // 重定向到登录页，并保存尝试访问的URL
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+  
+  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
+    // 没有权限，重定向到403页面
+    return <Navigate to="/errors/forbidden" replace />;
+  }
+  
+  return children;
+}
+
+// 在路由设置中使用
+<Route 
+  path="/dashboard" 
+  element={
+    <AuthGuard requiredRoles={['admin']}>
+      <Dashboard />
+    </AuthGuard>
+  } 
+/>
+```
+
+#### 4. 路由模块化组织
+
+当前项目的所有路由都定义在单一文件中，随着项目扩大，这会变得难以维护。
+
+**改进方案**：按功能模块组织路由文件。
+
+```
+src/
+  routes/
+    index.tsx         # 主路由入口
+    dashboard.routes.tsx   # 仪表盘相关路由
+    manage-view.routes.tsx # 管理视图相关路由
+    errors.routes.tsx      # 错误页面相关路由
+```
+
+```tsx
+// src/routes/manage-view.routes.tsx
+import { lazy } from 'react';
+import { AuthGuard } from '../guards/auth-guard';
+
+const Order = lazy(() => import('../features/manageView/order/order'));
+const Employee = lazy(() => import('../features/manageView/employee/employee'));
+const User = lazy(() => import('../features/manageView/users/user'));
+
+export const manageViewRoutes = [
+  {
+    path: 'manageView/order',
+    element: (
+      <AuthGuard requiredRoles={['admin', 'manager']}>
+        <Order />
+      </AuthGuard>
+    )
+  },
+  {
+    path: 'manageView/employee',
+    element: (
+      <AuthGuard requiredRoles={['admin', 'hr']}>
+        <Employee />
+      </AuthGuard>
+    )
+  },
+  {
+    path: 'manageView/users',
+    element: (
+      <AuthGuard requiredRoles={['admin']}>
+        <User />
+      </AuthGuard>
+    )
+  },
+];
+
+// src/routes/index.tsx
+import { createBrowserRouter } from 'react-router-dom';
+import Index from '../features/app/layout';
+import { dashboardRoutes } from './dashboard.routes';
+import { manageViewRoutes } from './manage-view.routes';
+import { errorRoutes } from './errors.routes';
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Index />,
+    children: [
+      ...dashboardRoutes,
+      ...manageViewRoutes,
+    ]
+  },
+  ...errorRoutes
+]);
+```
+
+#### 5. 统一路径命名约定
+
+当前项目中，路径命名不完全一致，有些使用camelCase（如`manageView`），而React Router通常推荐使用kebab-case命名URL路径。
+
+**改进方案**：统一使用kebab-case命名路径。
+
+```tsx
+// 更改前
+{
+  path: 'manageView/order',
+  element: <Order />
+}
+
+// 更改后
+{
+  path: 'manage-view/order',
+  element: <Order />
+}
+```
+
+同时更新`siderbar-data.ts`中对应的URL：
+
+```tsx
+{
+  title: 'Orders',
+  url: '/manage-view/order',
+  icon: IconChecklist,
+}
+```
+
+#### 6. 添加路由数据预加载
+
+当前项目似乎没有利用React Router v6的数据加载功能，这对提升用户体验很有帮助。
+
+**改进方案**：使用loader函数预加载数据。
+
+```tsx
+// src/features/manageView/users/user.tsx
+import { useLoaderData } from 'react-router-dom';
+import { fetchUsers } from '../../../api/users';
+
+// 数据加载器
+export async function loader() {
+  const users = await fetchUsers();
+  return { users };
+}
+
+export function User() {
+  const { users } = useLoaderData();
+  return (
+    <div>
+      {/* 渲染用户列表 */}
+    </div>
+  );
+}
+
+// 在路由配置中添加loader
+// src/routes/manage-view.routes.tsx
+import { loader as userLoader } from '../features/manageView/users/user';
+
+export const manageViewRoutes = [
+  {
+    path: 'manage-view/users',
+    element: <User />,
+    loader: userLoader
+  },
+  // ...其他路由
+];
+```
+
+#### 7. 优化导航链接
+
+当前项目在NavGroup组件中有一个问题，可能导致"React.Children.only expected to receive a single React element child"错误。
+
+**改进方案**：修复NavGroup组件中的Link实现。
+
+```tsx
+// src/components/layout/nav-group.tsx
+function SidebarMenuCollapsible({key, item}:{key:string, item:NavItem}){
+  const { setOpenMobile } = useSidebar()
+  return (
+    <Collapsible asChild className='group/collapsible'>
+      <SidebarMenuItem key={key}>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton asChild>
+            <Link to={item.url}>
+              {item.icon && <item.icon />}
+              {item.title}
+              <ChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+            </Link>
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent className='CollapsibleContent'>
+          {/* 子菜单内容 */}
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  )
+}
+```
+
+### 面向未来的路由管理建议
+
+随着项目不断发展，可考虑采用更先进的路由管理方式：
+
+#### 1. 使用React Router v7的完整框架模式
+
+React Router的最新版本提供了更强大的框架模式，更适合大型后台管理系统：
+
+```tsx
+// app/routes.tsx
+import {
+  type RouteConfig,
+  route,
+  index,
+  layout,
+  prefix,
+} from "@react-router/dev/routes";
+
+export default [
+  index("./dashboard.tsx"), // 根路径下的默认内容
+  
+  // 嵌套的管理视图路由
+  ...prefix("manage-view", [
+    route("order", "./manage-view/order.tsx"),
+    route("employee", "./manage-view/employee.tsx"),
+    route("users", "./manage-view/users.tsx"),
+  ]),
+  
+  // 错误页面
+  ...prefix("errors", [
+    route("forbidden", "./errors/forbidden.tsx"),
+    route("not-found", "./errors/not-found.tsx"),
+    route("unauthorized", "./errors/unauthorized.tsx"),
+    route("maintenance", "./errors/maintenance.tsx"),
+  ]),
+] satisfies RouteConfig;
+```
+
+#### 2. 考虑使用TanStack Router
+
+对于TypeScript项目，TanStack Router提供了更强大的类型安全和更现代的API：
+
+```tsx
+// 创建路由定义
+import { Router, Route, RootRoute } from '@tanstack/react-router'
+import { MainLayout } from './layouts/MainLayout'
+import { Dashboard } from './features/dashboard/dashboard'
+import { Order } from './features/manageView/order/order'
+
+// 根路由
+const rootRoute = new RootRoute({
+  component: MainLayout,
+})
+
+// 仪表盘路由
+const dashboardRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: Dashboard,
+})
+
+// 订单管理路由
+const orderRoute = new Route({
+  getParentRoute: () => rootRoute,
+  path: '/manage-view/order',
+  component: Order,
+})
+
+// 创建路由树
+const routeTree = rootRoute.addChildren([
+  dashboardRoute,
+  orderRoute,
+  // ...其他路由
+])
+
+// 创建路由器实例
+const router = new Router({ routeTree })
+```
+
+### 总结
+
+对于中型后台管理系统，路由管理应重点关注以下几个方面：
+
+1. **路由组织**：按功能模块组织路由，便于扩展和维护
+2. **路由与UI同步**：路由配置与侧边栏导航数据保持同步
+3. **性能优化**：使用代码分割和懒加载提高性能
+4. **权限控制**：实现基于角色的路由访问控制
+5. **数据预加载**：利用loader函数预加载数据
+6. **命名一致性**：统一路径命名约定
+7. **错误处理**：完善的错误页面和路由保护
+
+通过实施上述改进建议，可以使项目的路由结构更清晰、更易维护，同时提供更好的用户体验和开发体验。随着项目规模的增长，可以考虑迁移到更现代的路由解决方案，如React Router v7的框架模式或TanStack Router。
+
+---
+
+## React Router结合Zustand实现基于角色的权限控制
+
+在后台管理系统中，基于用户角色的路由权限控制是非常常见的需求。以下内容展示如何结合React Router和Zustand状态管理库实现灵活的权限控制系统。
+
+### 基本原理
+
+1. 使用Zustand存储认证状态和用户信息（包括角色）
+2. 在路由配置或组件渲染层面检查用户权限
+3. 根据权限检查结果决定是否允许访问路由或重定向到错误页面
+
+### 方案一：路由守卫组件
+
+最灵活的方式是创建专门的路由守卫组件，用于包裹需要权限控制的路由。
+
+```tsx
+// src/guards/auth-guard.tsx
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+
+interface AuthGuardProps {
+  requiredRoles?: string[];
+  children: React.ReactNode;
+}
+
+export function AuthGuard({ requiredRoles = [], children }: AuthGuardProps) {
+  const { auth } = useAuthStore();
+  const location = useLocation();
+  
+  // 检查是否已登录
+  if (!auth.user || !auth.accessToken) {
+    // 重定向到登录页，并保存当前路径用于登录后返回
+    return <Navigate to="/auth/signin" state={{ from: location.pathname }} replace />;
+  }
+  
+  // 检查角色权限
+  if (requiredRoles.length > 0 && !requiredRoles.includes(auth.user.role)) {
+    // 用户没有所需角色，重定向到禁止访问页面
+    return <Navigate to="/errors/forbidden" replace />;
+  }
+  
+  // 通过验证，渲染子组件
+  return <>{children}</>;
+}
+```
+
+然后在路由配置中使用这个守卫组件：
+
+```tsx
+// src/routes/index.tsx
+import { AuthGuard } from '../guards/auth-guard';
+import { User } from '../features/manageView/users/user';
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Index />,
+    children: [
+      // ...其他路由
+      {
+        path: 'manageView/users',
+        element: (
+          <AuthGuard requiredRoles={['admin']}>
+            <User />
+          </AuthGuard>
+        ),
+      },
+    ],
+  },
+  // ...其他路由
+]);
+```
+
+### 方案二：使用React Router v7的loader函数
+
+React Router v7引入了loader函数，可以在路由渲染前进行数据加载和权限验证：
+
+```tsx
+// src/loaders/auth-loader.ts
+import { redirect } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+
+export function createAuthLoader(requiredRoles = []) {
+  return async () => {
+    // 获取认证状态
+    // 注意：由于loader在组件外部运行，需要直接从store获取状态
+    const { auth } = useAuthStore.getState();
+    
+    // 检查是否已登录
+    if (!auth.user || !auth.accessToken) {
+      return redirect('/auth/signin');
+    }
+    
+    // 检查角色权限
+    if (requiredRoles.length > 0 && !requiredRoles.includes(auth.user.role)) {
+      return redirect('/errors/forbidden');
+    }
+    
+    // 通过验证，返回任何数据（或null）
+    return null;
+  };
+}
+```
+
+在路由配置中使用：
+
+```tsx
+// src/routes/index.tsx
+import { createAuthLoader } from '../loaders/auth-loader';
+import { User } from '../features/manageView/users/user';
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Index />,
+    children: [
+      // ...其他路由
+      {
+        path: 'manageView/users',
+        element: <User />,
+        loader: createAuthLoader(['admin']),
+      },
+    ],
+  },
+  // ...其他路由
+]);
+```
+
+### 方案三：高阶组件封装
+
+创建一个高阶组件来包装需要权限控制的组件：
+
+```tsx
+// src/hoc/withAuth.tsx
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+
+export function withAuth(WrappedComponent, requiredRoles = []) {
+  return function WithAuthComponent(props) {
+    const { auth } = useAuthStore();
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+      // 检查是否已登录
+      if (!auth.user || !auth.accessToken) {
+        navigate('/auth/signin', { replace: true });
+        return;
+      }
+      
+      // 检查角色权限
+      if (requiredRoles.length > 0 && !requiredRoles.includes(auth.user.role)) {
+        navigate('/errors/forbidden', { replace: true });
+      }
+    }, [auth, navigate]);
+    
+    // 假设通过验证才会到这一步
+    return <WrappedComponent {...props} />;
+  };
+}
+```
+
+然后在组件定义或路由配置中使用：
+
+```tsx
+// 在组件定义中使用
+const ProtectedUser = withAuth(User, ['admin']);
+
+// 或在路由配置中使用
+{
+  path: 'manageView/users',
+  element: <ProtectedUser />,
+}
+```
+
+### 方案四：路由配置中的权限配置
+
+将权限要求直接添加到路由配置中，然后在路由渲染层处理：
+
+```tsx
+// 扩展路由配置
+const routes = [
+  {
+    path: 'manageView/users',
+    element: <User />,
+    meta: {
+      requiredRoles: ['admin']
+    }
+  },
+  // ...其他路由
+];
+
+// 创建权限处理的路由映射组件
+function AuthRoutes({ routes }) {
+  const { auth } = useAuthStore();
+  
+  return (
+    <Routes>
+      {routes.map(route => {
+        const { path, element, meta } = route;
+        const requiredRoles = meta?.requiredRoles || [];
+        
+        // 创建包含权限检查的元素
+        const wrappedElement = (
+          <AuthGuard requiredRoles={requiredRoles}>
+            {element}
+          </AuthGuard>
+        );
+        
+        return <Route key={path} path={path} element={wrappedElement} />;
+      })}
+    </Routes>
+  );
+}
+```
+
+### 最佳实践建议
+
+基于当前项目结构和React Router v7的使用，推荐采用**方案一或方案二**，它们提供了最好的灵活性和代码可读性：
+
+1. **方案一（路由守卫组件）优势**：
+   - 组件化方式，更符合React理念
+   - 可以灵活地在JSX中使用
+   - 可以传递额外的属性和配置
+   - 容易理解和维护
+
+2. **方案二（loader函数）优势**：
+   - 利用了React Router v7的先进特性
+   - 在路由渲染前就进行权限检查，更高效
+   - 减少不必要的组件渲染
+   - 配置更简洁
+
+针对当前项目，实现基于角色的路由权限控制的步骤：
+
+1. **确保authStore正确存储用户角色**：
+   ```tsx
+   // 确认从登录响应中提取并存储了用户角色
+   auth.setUser({
+     id: userData.id,
+     userName: userData.userName,
+     role: userData.role,  // 确保包含角色信息
+     // ...其他用户属性
+   });
+   ```
+
+2. **创建路由守卫组件**（推荐方案一）：
+   ```tsx
+   // src/guards/auth-guard.tsx
+   import { Navigate } from 'react-router-dom';
+   import { useAuthStore } from '../store/authStore';
+
+   export function AuthGuard({ requiredRoles = [], children }) {
+     const { auth } = useAuthStore();
+     
+     if (!auth.user || !auth.accessToken) {
+       return <Navigate to="/auth/signin" replace />;
+     }
+     
+     if (requiredRoles.length > 0 && !requiredRoles.includes(auth.user.role)) {
+       return <Navigate to="/errors/forbidden" replace />;
+     }
+     
+     return <>{children}</>;
+   }
+   ```
+
+3. **在路由配置中应用权限控制**：
+   ```tsx
+   // 修改 routes/index.tsx
+   {
+     path: 'manageView/users',
+     element: (
+       <AuthGuard requiredRoles={['admin']}>
+         <User />
+       </AuthGuard>
+     ),
+   }
+   ```
+
+4. **扩展权限控制的粒度**（可选）：
+   ```tsx
+   // 更细粒度的权限控制
+   const userPermissions = {
+     view: ['admin', 'manager'],
+     create: ['admin'],
+     edit: ['admin'],
+     delete: ['admin']
+   };
+   
+   // 在组件内部使用
+   function User() {
+     const { auth } = useAuthStore();
+     const canCreate = auth.user && userPermissions.create.includes(auth.user.role);
+     
+     return (
+       <div>
+         <h1>用户管理</h1>
+         {canCreate && <button>创建用户</button>}
+         {/* 其他内容 */}
+       </div>
+     );
+   }
+   ```
+
+### 进阶功能
+
+#### 1. 记忆重定向前的URL
+
+当用户尝试访问需要权限的页面但未登录时，可以保存该URL，登录后自动重定向回去：
+
+```tsx
+// 在AuthGuard中
+if (!auth.user || !auth.accessToken) {
+  return <Navigate to="/auth/signin" state={{ from: location.pathname }} replace />;
+}
+
+// 在登录页面中
+function SignIn() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from || '/';
+  
+  const handleLogin = async (credentials) => {
+    // 登录逻辑...
+    if (loginSuccess) {
+      navigate(from, { replace: true });
+    }
+  };
+  
+  // 渲染登录表单...
+}
+```
+
+#### 2. 全局权限状态监听
+
+监听认证状态变化，在token过期或用户登出时自动重定向：
+
+```tsx
+// src/auth/auth-status-listener.tsx
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+
+export function AuthStatusListener({ children }) {
+  const { auth } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  useEffect(() => {
+    // 如果token为空且不在登录页面或公开页面，则重定向到登录
+    const publicPaths = ['/auth/signin', '/auth/signup', '/about'];
+    const isPublicPath = publicPaths.some(path => location.pathname.startsWith(path));
+    
+    if (!auth.accessToken && !isPublicPath) {
+      navigate('/auth/signin', { replace: true });
+    }
+  }, [auth.accessToken, location.pathname, navigate]);
+  
+  return <>{children}</>;
+}
+
+// 在应用根组件中使用
+function App() {
+  return (
+    <AuthStatusListener>
+      <RouterProvider router={router} />
+    </AuthStatusListener>
+  );
+}
+```
+
+#### 3. 实现权限持久化
+
+确保页面刷新后权限状态不丢失：
+
+```tsx
+// 在应用初始化时从localStorage或cookie恢复用户信息
+useEffect(() => {
+  const token = Cookies.get('thisisjustarandomstring');
+  if (token) {
+    // 从token解析用户信息或发送请求获取用户信息
+    const getUserInfo = async () => {
+      try {
+        const response = await fetch('/api/me', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          auth.setUser(userData);
+        } else {
+          // Token无效，清除token
+          auth.reset();
+        }
+      } catch (error) {
+        console.error('Failed to fetch user info:', error);
+        auth.reset();
+      }
+    };
+    
+    getUserInfo();
+  }
+}, []);
+```
+
+### 结论
+
+通过结合React Router和Zustand实现的权限控制系统，可以有效地：
+
+1. **保护敏感路由**：确保只有具有适当权限的用户才能访问特定页面
+2. **提供良好的用户体验**：自动重定向未授权用户并提供清晰的反馈
+3. **维护代码可读性**：通过组件化和声明式方法保持代码整洁
+4. **支持灵活的权限粒度**：不仅可以控制页面访问，还可以控制页面内的功能
+
+在大型后台管理系统中，权限控制通常还会扩展到API请求层面，确保前后端一致的权限模型，这可以通过添加axios拦截器或自定义fetch包装器来实现。
+
+---
+
 ## React Router 导航问题分析
 
 ### 点击订单管理链接不跳转的原因分析
@@ -1825,19 +2096,31 @@ export default Index;
 如果使用React Router 7的框架模式，可以更简洁地解决这个问题：
 
 ```tsx
-// app/routes.ts
+// app/routes.tsx
 import {
   type RouteConfig,
   route,
   index,
+  layout,
   prefix,
 } from "@react-router/dev/routes";
 
 export default [
-  index("./dashboard/index.tsx"),
-  ...prefix("manageView", [
-    route("order", "./manageView/order.tsx"),
-    // 其他管理视图路由...
+  index("./dashboard.tsx"), // 根路径下的默认内容
+  
+  // 嵌套的管理视图路由
+  ...prefix("manage-view", [
+    route("order", "./manage-view/order.tsx"),
+    route("employee", "./manage-view/employee.tsx"),
+    route("users", "./manage-view/users.tsx"),
+  ]),
+  
+  // 错误页面
+  ...prefix("errors", [
+    route("forbidden", "./errors/forbidden.tsx"),
+    route("not-found", "./errors/not-found.tsx"),
+    route("unauthorized", "./errors/unauthorized.tsx"),
+    route("maintenance", "./errors/maintenance.tsx"),
   ]),
 ] satisfies RouteConfig;
 ```

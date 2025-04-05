@@ -15,8 +15,8 @@ export function AppPerformance() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card>
         <CardHeader>
-          <CardTitle>Server Response Time</CardTitle>
-          <CardDescription>Average: 250ms</CardDescription>
+          <CardTitle>服务器响应时间</CardTitle>
+          <CardDescription>平均: 250ms</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -37,8 +37,8 @@ export function AppPerformance() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Client-side Performance</CardTitle>
-          <CardDescription>Average Load Time: 1.2s</CardDescription>
+          <CardTitle>客户端性能</CardTitle>
+          <CardDescription>平均加载时间: 1.2s</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -59,12 +59,12 @@ export function AppPerformance() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Error Rate</CardTitle>
-          <CardDescription>Last 30 days</CardDescription>
+          <CardTitle>错误率</CardTitle>
+          <CardDescription>过去30天</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold">0.12%</div>
-          <p className="text-xs text-muted-foreground">-0.05% from last month</p>
+          <p className="text-xs text-muted-foreground">比上个月下降0.05%</p>
         </CardContent>
       </Card>
     </div>

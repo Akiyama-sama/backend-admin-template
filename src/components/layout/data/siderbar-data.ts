@@ -10,127 +10,101 @@ import {
   IconLockAccess,
   IconMessages,
   IconNotification,
-  IconPackages,
   IconPalette,
   IconServerOff,
   IconSettings,
   IconTool,
-  IconUserCog,
   IconUserOff,
   IconUsers,
 } from '@tabler/icons-react'
-import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
 
 export const sidebarData= {
   user: {
-    name: 'admin',
-    email: 'admin@admin.com',
-    avatar: '/avatars/shadcn.jpg',
+    username: 'admin',
+    role: 'admin',
   },
-  teams: [
-    {
-      name: 'Shadcn Admin',
-      logo: Command,
-      plan: 'Vite + ShadcnUI',
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
-    },
-  ],
   navGroups: [
     {
-      title: 'General',
+      title: '通用',
       items: [
         {
-          title: 'Dashboard',
+          title: '仪表盘',
           url: '/',
           icon: IconLayoutDashboard,
         },
         {
-          title: 'Tasks',
-          url: '/tasks',
+          title: '订单',
+          url: '/manageView/order',
           icon: IconChecklist,
         },
         {
-          title: 'Apps',
-          url: '/apps',
-          icon: IconPackages,
-        },
-        {
-          title: 'Chats',
-          url: '/chats',
+          title: '员工',
+          url: '/manageView/employee',
           icon: IconMessages,
         },
         {
-          title: 'Users',
-          url: '/users',
+          title: '用户',
+          url: '/manageView/users',
           icon: IconUsers,
         },
       ],
     },
     {
-      title: 'Pages',
+      title: '页面',
       items: [
         {
-          title: 'Auth',
+          title: '认证',
           icon: IconLockAccess,
           items: [
             {
-              title: 'Sign In',
-              url: '/sign-in',
+              title: '登录 (1)',
+              url: '/auth/signin',
             },
             {
-              title: 'Sign In (2 Col)',
-              url: '/sign-in-2',
+              title: '登录 (2)',
+              url: '/auth/signin2',
             },
             {
-              title: 'Sign Up',
-              url: '/sign-up',
+              title: '注册',
+              url: '/auth/signup',
             },
             {
-              title: 'Forgot Password',
-              url: '/forgot-password',
+              title: '忘记密码',
+              url: '/auth/forgot-password',
             },
             {
-              title: 'OTP',
-              url: '/otp',
+              title: '验证码',
+              url: '/auth/otp',
             },
           ],
         },
         {
-          title: 'Errors',
+          title: '错误',
           icon: IconBug,
           items: [
             {
-              title: 'Unauthorized',
-              url: '/401',
+              title: '未授权',
+              url: '/errors/unauthorized',
               icon: IconLock,
             },
             {
-              title: 'Forbidden',
-              url: '/403',
+              title: '禁止访问',
+              url: '/errors/forbidden',
               icon: IconUserOff,
             },
             {
-              title: 'Not Found',
-              url: '/404',
+              title: '未找到',
+              url: '/errors/not-found',
               icon: IconError404,
             },
             {
-              title: 'Internal Server Error',
-              url: '/500',
+              title: '服务器错误',
+              url: '/errors/general-error',
               icon: IconServerOff,
             },
             {
-              title: 'Maintenance Error',
-              url: '/503',
+              title: '维护错误',
+              url: '/errors/maintenance',
               icon: IconBarrierBlock,
             },
           ],
@@ -138,41 +112,37 @@ export const sidebarData= {
       ],
     },
     {
-      title: 'Other',
+      title: '其他',
       items: [
         {
-          title: 'Settings',
+          title: '设置',
           icon: IconSettings,
           items: [
+            
             {
-              title: 'Profile',
-              url: '/settings',
-              icon: IconUserCog,
-            },
-            {
-              title: 'Account',
+              title: '账户',
               url: '/settings/account',
               icon: IconTool,
             },
             {
-              title: 'Appearance',
+              title: '外观',
               url: '/settings/appearance',
               icon: IconPalette,
             },
             {
-              title: 'Notifications',
+              title: '通知',
               url: '/settings/notifications',
               icon: IconNotification,
             },
             {
-              title: 'Display',
+              title: '显示',
               url: '/settings/display',
               icon: IconBrowserCheck,
             },
           ],
         },
         {
-          title: 'Help Center',
+          title: '帮助中心',
           url: '/help-center',
           icon: IconHelp,
         },

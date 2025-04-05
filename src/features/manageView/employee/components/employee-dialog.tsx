@@ -5,7 +5,7 @@ import { useEmployee } from '../context/employeeContext'
 import { EmployeeMutateDrawer } from './employee-mutate-drawer'
 
 export function EmployeeDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useEmployee()
+  const { open, setOpen, currentRow, setCurrentRow} = useEmployee()
   return (
     <>
       <EmployeeMutateDrawer
@@ -13,7 +13,7 @@ export function EmployeeDialogs() {
         open={open === 'create'}
         onOpenChange={() => setOpen('create')}
       />
-
+      
       {currentRow && (
         <>
           <EmployeeMutateDrawer
@@ -44,7 +44,7 @@ export function EmployeeDialogs() {
                 setCurrentRow(null)
               }, 500)
               toast({
-                title: 'The following employee has been deleted:',
+                title: '以下员工已被删除：',
                 description: (
                   <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
                     <code className='text-white'>
@@ -55,15 +55,15 @@ export function EmployeeDialogs() {
               })
             }}
             className='max-w-md'
-            title={`Delete this employee: ${currentRow.id} ?`}
+            title={`删除这个员工: ${currentRow.id} ?`}
             desc={
               <>
-                You are about to delete a employee with the ID{' '}
+                你确定要删除这个员工吗？{' '}
                 <strong>{currentRow.id}</strong>. <br />
-                This action cannot be undone.
+                这个操作无法撤销。
               </>
             }
-            confirmText='Delete'
+            confirmText='删除'
           />
         </>
       )}

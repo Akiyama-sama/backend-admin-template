@@ -1,20 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { format } from "date-fns";
 import { DataTableRowActions } from "./data-table-row-actions";
-export type Employee = {
-    id: number;
-    employeeNo: string;
-    name: string;
-    gender: 'M' | 'F';
-    birthDate: string;
-    address: string;
-    telephone: string;
-    hireDate: Date;
-    department: string;
-    headship: string;
-    salary: number;
-}
+import { Employee } from "../data/schema";
 
 export const columns: ColumnDef<Employee>[] = [
     {
@@ -57,7 +45,9 @@ export const columns: ColumnDef<Employee>[] = [
       {
         accessorKey: "birthDate",
         header: "出生日期",
-        
+        cell:({row})=>{
+            return row.original.birthDate ? format(row.original.birthDate, 'yyyy-MM-dd') : ''
+        }
       },
       {
         accessorKey: "address",
@@ -70,6 +60,9 @@ export const columns: ColumnDef<Employee>[] = [
       {
         accessorKey: "hireDate",
         header: "入职日期",
+        cell:({row})=>{
+            return row.original.hireDate ? format(row.original.hireDate, 'yyyy-MM-dd') : ''
+        }
       },
       {
         accessorKey: "department",

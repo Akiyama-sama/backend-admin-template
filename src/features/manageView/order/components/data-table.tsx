@@ -27,12 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+
 import {
   Select,
   SelectContent,
@@ -41,8 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-
+import DateTableToolbar from "./data-table-toolbar"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -80,52 +74,7 @@ export function DataTable<TData, TValue>({
 
   return (
   <div>
-      <div className="flex justify-between py-4">
-        {/* 搜索框 */}
-        <Input
-          placeholder="搜索订单..."
-          value={(table.getColumn("orderNo")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("orderNo")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <div className="flex items-center space-x-2">
-          {/* 添加订单 */}
-          <Button variant="outline" className="">添加订单</Button>
-          {/* 表格列选择 */}
-
-          <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              列选择
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter(
-                (column) => column.getCanHide()
-              )
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        
-      </div>
+    <DateTableToolbar table={table} />
       
     <div className="rounded-md border">
       <Table>
@@ -166,7 +115,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                没有结果。
               </TableCell>
             </TableRow>
           )}
@@ -175,8 +124,8 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-end space-x-2 py-4">
         {/* 选择的行数显示*/}
         <div className="flex-1 text-sm text-muted-foreground pl-6">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          已选择 {table.getFilteredSelectedRowModel().rows.length} 行，共{" "}
+          {table.getFilteredRowModel().rows.length} 行。
         </div>
         {/*选择每页的行数 */}
         <div className='flex items-center space-x-2'>
@@ -207,7 +156,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className='sr-only'>Go to first page</span>
+            <span className='sr-only'>转到第一页</span>
             <DoubleArrowLeftIcon className='h-4 w-4' />
           </Button>
           <Button
@@ -216,7 +165,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className='sr-only'>Go to previous page</span>
+            <span className='sr-only'>转到上一页</span>
             <ChevronLeftIcon className='h-4 w-4' />
           </Button>
           <Button
@@ -225,7 +174,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className='sr-only'>Go to next page</span>
+            <span className='sr-only'>转到下一页</span>
             <ChevronRightIcon className='h-4 w-4' />
           </Button>
           <Button
@@ -234,7 +183,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
-            <span className='sr-only'>Go to last page</span>
+            <span className='sr-only'>转到最后一页</span>
             <DoubleArrowRightIcon className='h-4 w-4' />
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { Order } from './components/columns';
+import { Order } from './schema';
 
 export const orderData: Order[] = [
     {

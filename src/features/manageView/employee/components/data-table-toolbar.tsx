@@ -17,10 +17,10 @@ export default function DateTableToolbar<TData>({
         <div className="flex items-center space-x-2">
           {/* 搜索框 */}
         <Input
-          placeholder="搜索员工..."
-          value={(table.getColumn("employeeNo")?.getFilterValue() as string) ?? ""}
+          placeholder="搜索员工姓名..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("employeeNo")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -45,7 +45,7 @@ export default function DateTableToolbar<TData>({
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              列选择
+              视图
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
