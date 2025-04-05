@@ -48,6 +48,10 @@ npm run preview
 ![image](https://github.com/user-attachments/assets/74a6c228-a250-4f86-aa70-503513b62a8b)
 ![image](https://github.com/user-attachments/assets/b49ece3b-bf26-4f4b-a657-476a5a7406a6)
 ![image](https://github.com/user-attachments/assets/023fc445-f016-4ed2-b7b6-d30a7b37a7a1)
+![image](https://github.com/user-attachments/assets/ba0f6362-fa9c-43b1-aee7-47fbf7c46c91)
+![image](https://github.com/user-attachments/assets/9d57e123-5cd3-4bb5-a68f-26f4d79932e4)
+
+
 
 
 
