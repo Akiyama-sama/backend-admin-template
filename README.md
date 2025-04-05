@@ -39,6 +39,18 @@ npm run build
 # 预览生产构建
 npm run preview
 ```
+## 项目部分截图
+![image](https://github.com/user-attachments/assets/7d5c4d2a-4484-43ca-a11f-b6d277587731)
+![image](https://github.com/user-attachments/assets/40b81d43-9d27-4dc8-9b9d-36675f8152d8)
+![image](https://github.com/user-attachments/assets/f452df57-5bad-47fd-8aac-877d182cee4d)
+![image](https://github.com/user-attachments/assets/935956ae-89fc-45fa-9e3e-3b0c5141746a)
+![image](https://github.com/user-attachments/assets/22fe01c0-4eb3-4c8d-984e-3641f571319a)
+![image](https://github.com/user-attachments/assets/74a6c228-a250-4f86-aa70-503513b62a8b)
+![image](https://github.com/user-attachments/assets/b49ece3b-bf26-4f4b-a657-476a5a7406a6)
+![image](https://github.com/user-attachments/assets/023fc445-f016-4ed2-b7b6-d30a7b37a7a1)
+
+
+
 
 ## 项目特点与优势
 
